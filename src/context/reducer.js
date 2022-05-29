@@ -1,17 +1,14 @@
-import {getAccessToken, getRefreshToken, isLoggedIn} from "axios-jwt";
 
 const user = localStorage.getItem('currentUser')
     ? JSON.parse(localStorage.getItem('currentUser')).user
     : '';
 
-const accessToken = getAccessToken();
-const refreshToken = getRefreshToken();
+const accessToken = localStorage.getItem('token');
 
 export const initialState = {
     user: '' || user,
     accessToken: '' || accessToken,
-    refreshToken: '' || refreshToken,
-    isLoggedIn: isLoggedIn(),
+    isLoggedIn: accessToken != null,
     loading: false,
     errorMessage: null,
 };
@@ -25,11 +22,11 @@ export const AuthReducer = (initialState, action) => {
                 ...initialState,
                 user: action.payload.user,
                 accessToken: action.payload.accessToken,
-                refreshToken: action.payload.refreshToken,
                 isLoggedIn: true,
                 loading: false,
             };
         case 'LOGOUT':
+            localStorage.clear();
             return {
                 ...initialState,
                 user: '',

@@ -1,10 +1,12 @@
 import {Stack, Button} from '@mui/material';
 import {useSnackbar} from "notistack";
-import "yup-phone";
 import PropTypes from "prop-types";
 import axios from "axios";
-import {BASE_URL, URL_PAYMENTS} from "../../../api/ApiSecured";
-import {errorHandler} from "../../../utils/errorUtils";
+import {useNavigate} from "react-router-dom";
+import {BASE_URL, URL_PAYMENTS} from "../api/ApiSecured";
+import {errorHandler} from "../utils/errorUtils";
+import {getAuthorizationUrl} from "../api/AuthApi";
+import {useAuthState} from "../context";
 
 PaymentForm.propTypes = {
   order: PropTypes.object.isRequired
@@ -12,6 +14,8 @@ PaymentForm.propTypes = {
 
 export default function PaymentForm({order}) {
   const {enqueueSnackbar} = useSnackbar();
+  const navigate = useNavigate();
+  const authState = useAuthState();
   const isNew = order.orderStatus === 'CREATED'
   const isTinkoff = order.orderType === 'TINKOFF'
 
@@ -29,6 +33,14 @@ export default function PaymentForm({order}) {
       })
   };
 
+  const handleAuthApelsin = () => {
+    if (authState.isLoggedIn) {
+      navigate(`/apelsin?id=${order.id}`, { replace: true })
+    } else {
+      window.location.href = getAuthorizationUrl(order.id)
+    }
+  };
+
   if (isNew) {
     return (
       <Stack spacing={3}>
@@ -36,6 +48,7 @@ export default function PaymentForm({order}) {
           fullWidth
           size="large"
           variant="contained"
+          onClick={handleAuthApelsin}
         >
           Apelsin Pay
         </Button>

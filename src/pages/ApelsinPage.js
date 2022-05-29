@@ -2,16 +2,17 @@ import { styled } from '@mui/material/styles';
 import {Box, Card, Link, Container, Typography, CircularProgress, Stack, Button, Divider} from '@mui/material';
 // layouts
 import React, {useEffect, useState} from "react";
-import {useLocation} from "react-router-dom";
+import {useLocation, useNavigate} from "react-router-dom";
 // components
 import {useSnackbar} from "notistack";
 import axios from "axios";
 import Page from '../components/Page';
 import PaymentForm from "../sections/PaymentForm";
-import {BASE_URL, URL_PAYMENTS} from "../api/ApiSecured";
+import apiSecured, {BASE_URL, URL_ACCOUNT_PERSONAL, URL_PAYMENTS} from "../api/ApiSecured";
 import {errorHandler} from "../utils/errorUtils";
 import {fCurrencyByEnum} from "../utils/formatEnum";
 import {fTime} from "../utils/formatTime";
+import PaymentApelsinForm from "../sections/PaymentApelsinForm";
 
 // ----------------------------------------------------------------------
 
@@ -33,13 +34,14 @@ const ContentStyle = styled('div')(({ theme }) => ({
 
 // ----------------------------------------------------------------------
 
-export default function PaymentPage() {
+export default function ApelsinPage() {
   const {search} = useLocation();
   const [loading, setLoading] = useState(false)
   const [order, setOrder] = useState(null)
+  const [deposits, setDeposits] = useState(null)
   const {enqueueSnackbar} = useSnackbar();
+  const navigate = useNavigate();
   const [ms, setMs] = useState(0)
-  const [isClose, setClose] = useState(false)
   const params = new URLSearchParams(search);
   const id = params.get('id');
 
@@ -72,10 +74,7 @@ export default function PaymentPage() {
         const now = new Date(Date.now());
         const endDate = new Date(res.data.endDate);
         if (endDate.getTime() < now.getTime() || res.data.orderStatus === 'HOLD' || res.data.orderStatus === 'COMPLETED' || res.data.orderStatus === 'CANCEL') {
-          setClose(true)
-          setOrder(res.data)
-          setLoading(false)
-          return
+          navigate(`/?id=${id}`)
         }
         const ms = endDate.getTime() - now.getTime()
         setMs(ms)
@@ -84,12 +83,15 @@ export default function PaymentPage() {
         }, 1000)
 
         timeout = setTimeout(() => {
-          setClose(true)
+          navigate(`/?id=${id}`)
         }, ms)
 
         setOrder(res.data)
+        return apiSecured.get(`${URL_ACCOUNT_PERSONAL}api/personal`)
+      })
+      .then(res => {
+        setDeposits(res.data)
         setLoading(false)
-
       })
       .catch(reason => {
         errorHandler(enqueueSnackbar, reason)
@@ -134,46 +136,16 @@ export default function PaymentPage() {
               </Typography>
             </Box>
 
-            {!isClose ? (
-              <div>
-                <PaymentForm order={order} />
+            <PaymentApelsinForm order={order} deposits={deposits} />
 
-                <Stack justifyContent="space-between" direction="row" mt={3}>
-                  <Typography variant="body2" color="text.secondary">
-                    Заказ номер {order.id}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {fTime(ms)}
-                  </Typography>
-                </Stack>
-              </div>
-            ) : (
-              <div>
-                <Button
-                  fullWidth
-                  size="large"
-                  variant="contained"
-                  href={order.redirectUrl}
-                >
-                  Перейти в магазин
-                </Button>
-                <Stack justifyContent="space-between" direction="row" mt={3}>
-                  <Typography variant="body2" color="text.secondary">
-                    Заказ номер {order.id}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {order.orderStatus === 'HOLD' && "Заказ ожидает подтверждения магазина"}
-                    {order.orderStatus === 'COMPLETED' && "Заказ уже оплачен"}
-                    {order.orderStatus === 'CANCEL' && `Заказ отменен`}
-                  </Typography>
-                </Stack>
-                {order.orderStatus === 'CANCEL' && (
-                  <Typography mt={1} variant="body2" color="text.secondary" >
-                    {`Причина отмены: ${order.reasonCancel}`}
-                  </Typography>
-                )}
-              </div>
-            )}
+            <Stack justifyContent="space-between" direction="row" mt={3}>
+              <Typography variant="body2" color="text.secondary">
+                Заказ номер {order.id}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {fTime(ms)}
+              </Typography>
+            </Stack>
 
 
             <Typography variant="body2" align="center" sx={{ color: 'text.secondary', mt: 3 }}>

@@ -10,7 +10,7 @@ function GuestGuard({ children }) {
     const { isLoggedIn } = account;
 
     if (isLoggedIn) {
-        return <Navigate to="/" />;
+        return <Navigate to="/apelsin" />;
     }
 
     return children;

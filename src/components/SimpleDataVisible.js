@@ -1,6 +1,5 @@
 import PropTypes from "prop-types";
 import {Box, Button, Divider, Stack, Typography} from "@mui/material";
-import Label from "./Label";
 
 SimpleDataVisible.propTypes = {
   label: PropTypes.string.isRequired,
@@ -33,24 +32,16 @@ export default function SimpleDataVisible({
                                             colorTitle = 'text.disable',
                                             withButton = false,
                                             onClick,
-                                            titleButton,
-                                            isLabel = false,
-                                            colorLabel
+                                            titleButton
 }) {
   return (
     <Box mb={mb} >
       <Stack direction="column" >
         <Typography variant="caption" color={colorTitle}>{label}</Typography>
 
-        {isLabel ? (
-          <Label color={colorLabel} sx={{ maxWidth: "200px"}}>
-            {text}
-          </Label>
-        ) : (
-          <Typography variant="body1">
-            {text}
-          </Typography>
-        )}
+        <Typography variant="body1">
+          {text}
+        </Typography>
 
         {withButton && (
           <Button color="secondary"
