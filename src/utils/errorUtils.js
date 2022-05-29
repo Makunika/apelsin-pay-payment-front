@@ -1,15 +1,11 @@
 
 export function errorHandler(snack, reason) {
   console.log(reason)
-  if (reason == null) {
+  if (!reason || !reason.response || !reason.response.data) {
     snack(`Что то пошло не так 😢`, {variant: "error"})
   }
-  if (reason.response == null) {
-    snack(`Ошибка ${reason}`, {variant: "error"})
-    return
-  }
-  let msg = reason.response.data.message
-  if (reason.response.data.violations != null) {
+  let msg = reason.response.data.message || reason.response.data
+  if (reason.response.data.violations) {
     reason.response.data.violations.forEach(v => {
       msg += ` (field: ${v.fieldName}, message: ${v.message})`
     })

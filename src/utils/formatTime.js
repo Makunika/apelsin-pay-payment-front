@@ -15,6 +15,13 @@ export function fDateTime(date) {
   });
 }
 
+export function fTime(date) {
+  return format(new Date(date), 'mm:ss', {
+    locale: ruLocale
+  });
+}
+
+
 export function fDateTimeSuffix(date) {
   return format(new Date(date), 'dd/MM/yyyy hh:mm p',{
     locale: ruLocale
